@@ -46,6 +46,7 @@ CREATE TABLE public.contacts (
   tags TEXT[],
   notes TEXT,
   lead_status lead_status DEFAULT 'new',
+  profile_picture_url TEXT,
   last_contacted_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -134,6 +135,9 @@ CREATE TABLE public.webhook_events (
 -- Create indexes for better performance
 CREATE INDEX idx_contacts_user_id ON public.contacts(user_id);
 CREATE INDEX idx_contacts_phone ON public.contacts(phone_number);
+CREATE INDEX idx_contacts_lead_status ON public.contacts(lead_status);
+CREATE INDEX idx_contacts_profile_picture_url ON public.contacts(profile_picture_url);
+CREATE INDEX idx_contacts_last_contacted ON public.contacts(last_contacted_at);
 CREATE INDEX idx_conversations_user_id ON public.conversations(user_id);
 CREATE INDEX idx_conversations_contact_id ON public.conversations(contact_id);
 CREATE INDEX idx_messages_conversation_id ON public.messages(conversation_id);
