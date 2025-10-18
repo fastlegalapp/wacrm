@@ -115,10 +115,10 @@ export async function POST(request: NextRequest) {
         default:
           return NextResponse.json({ error: `Message type '${type}' not supported` }, { status: 400 })
       }
-    } catch (whatsappError: any) {
+    } catch (whatsappError: unknown) {
       console.error('WhatsApp API error:', whatsappError)
       return NextResponse.json(
-        { error: `Failed to send message: ${whatsappError.message}` },
+        { error: `Failed to send message: ${whatsappError instanceof Error ? whatsappError.message : 'Unknown error'}` },
         { status: 500 }
       )
     }

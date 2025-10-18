@@ -150,8 +150,8 @@ export function ConversationsView() {
 
     setSending(true)
     try {
-      let mediaUrl = null
-      let mediaType = null
+      const mediaUrl = null
+      const mediaType = null
 
       // Handle media upload if needed
       if (mediaFile && messageType !== 'text') {
@@ -162,7 +162,7 @@ export function ConversationsView() {
         return
       }
 
-      const requestBody: any = {
+      const requestBody: Record<string, unknown> = {
         conversationId: selectedConversation.id,
         message: newMessage.trim() || '',
         type: messageType,
@@ -657,7 +657,7 @@ export function ConversationsView() {
                   <div className="flex items-center space-x-2 mb-3">
                     <select 
                       value={messageType} 
-                      onChange={(e) => setMessageType(e.target.value as any)}
+                      onChange={(e) => setMessageType(e.target.value as 'text' | 'image' | 'document' | 'audio' | 'video' | 'sticker' | 'quick_reply')}
                       className="text-sm border rounded px-2 py-1"
                     >
                       <option value="text">Text</option>

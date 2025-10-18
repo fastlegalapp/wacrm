@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { createWhatsAppAPIForUser } from '@/lib/whatsapp-api'
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const supabase = await createClient()
 
@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
         message: 'WhatsApp API connection successful!',
         phoneInfo
       })
-    } catch (whatsappError: any) {
+    } catch (whatsappError: unknown) {
       return NextResponse.json(
-        { error: `WhatsApp API Error: ${whatsappError.message}` },
+        { error: `WhatsApp API Error: ${whatsappError instanceof Error ? whatsappError.message : 'Unknown error'}` },
         { status: 500 }
       )
     }
