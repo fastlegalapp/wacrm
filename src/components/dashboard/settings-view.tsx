@@ -294,6 +294,43 @@ export function SettingsView() {
               <Button
                 variant="outline"
                 onClick={async () => {
+                  if (confirm('This will attempt to fetch profile pictures for all your contacts. This may take a few minutes. Continue?')) {
+                    try {
+                      setLoading(true)
+                      setError('')
+                      
+                      const response = await fetch('/api/fetch-profile-pictures', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ userId: user?.id }),
+                      })
+                      
+                      const result = await response.json()
+                      
+                      if (!response.ok) {
+                        throw new Error(result.error || 'Failed to fetch profile pictures')
+                      }
+                      
+                      alert(`Profile picture fetching completed!\n\nUpdated: ${result.updated} contacts\nTotal processed: ${result.total} contacts`)
+                      
+                    } catch (err: any) {
+                      setError(err.message)
+                    } finally {
+                      setLoading(false)
+                    }
+                  }
+                }}
+                disabled={loading || !credentials.access_token || !credentials.phone_number_id}
+                className="flex items-center space-x-2"
+              >
+                <span>Fetch Profile Pictures</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={async () => {
                   if (confirm('Are you sure you want to clear your WhatsApp credentials? This will disable all WhatsApp functionality.')) {
                     try {
                       const { error } = await supabase
