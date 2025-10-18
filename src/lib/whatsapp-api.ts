@@ -334,23 +334,46 @@ export class WhatsAppAPI {
 
   async getProfileInfo(phoneNumber: string) {
     try {
-      const response = await fetch(
-        `https://graph.facebook.com/v18.0/${phoneNumber}`,
-        {
-          headers: this.getHeaders(),
-        }
-      )
+      console.log('Fetching profile info for phone number:', phoneNumber)
+      
+      // Try different phone number formats
+      const phoneFormats = [
+        phoneNumber, // Original format (e.g., 919024828295)
+        phoneNumber.startsWith('91') ? phoneNumber.substring(2) : phoneNumber, // Remove country code
+        `+${phoneNumber}`, // Add + prefix
+        phoneNumber.startsWith('91') ? `+${phoneNumber}` : `+91${phoneNumber}` // Ensure +91 prefix
+      ]
+      
+      for (const format of phoneFormats) {
+        try {
+          console.log('Trying phone format:', format)
+          const response = await fetch(
+            `https://graph.facebook.com/v18.0/${format}`,
+            {
+              headers: this.getHeaders(),
+            }
+          )
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        // Profile info might not be available for all numbers
-        if (errorData.error?.code === 100) {
-          return null
+          if (response.ok) {
+            const data = await response.json()
+            console.log('Profile info response for format', format, ':', data)
+            return data
+          } else {
+            const errorData = await response.json()
+            console.log('Error for format', format, ':', errorData)
+            // Profile info might not be available for all numbers
+            if (errorData.error?.code === 100) {
+              continue // Try next format
+            }
+          }
+        } catch (formatError) {
+          console.log('Error for format', format, ':', formatError)
+          continue // Try next format
         }
-        throw new Error(`WhatsApp API Error: ${errorData.error?.message || 'Unknown error'}`)
       }
-
-      return await response.json()
+      
+      console.log('No profile info found for any phone format')
+      return null
     } catch (error) {
       console.error('Error getting profile info:', error)
       return null

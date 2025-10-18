@@ -116,8 +116,6 @@ async function processIncomingMessage(message: any, supabase: any, contacts: any
       mediaType = 'sticker'
     }
 
-    // We'll fetch the media URL later after we have the userId
-
     // Find or create contact
     const { data: contact, error: contactError } = await supabase
       .from('contacts')
@@ -147,6 +145,24 @@ async function processIncomingMessage(message: any, supabase: any, contacts: any
       }
       if (profilePictureUrl) {
         updateData.profile_picture_url = profilePictureUrl
+      }
+      
+      // If we don't have a profile picture, try to fetch it
+      if (!profilePictureUrl) {
+        try {
+          const { createWhatsAppAPIForUser } = await import('@/lib/whatsapp-api')
+          const whatsappAPI = await createWhatsAppAPIForUser(userId)
+          if (whatsappAPI) {
+            console.log('Fetching profile picture for existing contact:', phoneNumber)
+            const profileInfo = await whatsappAPI.getProfileInfo(phoneNumber)
+            if (profileInfo && profileInfo.profile_picture_url) {
+              updateData.profile_picture_url = profileInfo.profile_picture_url
+              console.log('Updated existing contact with profile picture:', profileInfo.profile_picture_url)
+            }
+          }
+        } catch (error) {
+          console.log('Could not fetch profile picture for existing contact:', error)
+        }
       }
       
       console.log('Updating existing contact with profile info:', {
@@ -237,14 +253,21 @@ async function processIncomingMessage(message: any, supabase: any, contacts: any
         const { createWhatsAppAPIForUser } = await import('@/lib/whatsapp-api')
         const whatsappAPI = await createWhatsAppAPIForUser(userId)
         if (whatsappAPI) {
+          console.log('Attempting to fetch profile picture for:', phoneNumber)
           const profileInfo = await whatsappAPI.getProfileInfo(phoneNumber)
+          console.log('Profile info response:', profileInfo)
+          
           if (profileInfo && profileInfo.profile_picture_url) {
             profilePictureUrl = profileInfo.profile_picture_url
-            console.log('Fetched profile picture URL from API:', profilePictureUrl)
+            console.log('Successfully fetched profile picture URL from API:', profilePictureUrl)
+          } else {
+            console.log('No profile picture URL found in API response')
           }
+        } else {
+          console.log('Could not create WhatsApp API instance for profile picture fetch')
         }
       } catch (error) {
-        console.log('Could not fetch profile picture:', error)
+        console.log('Error fetching profile picture:', error)
       }
     }
 
