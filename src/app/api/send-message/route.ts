@@ -60,7 +60,16 @@ export async function POST(request: NextRequest) {
     // Send message via WhatsApp API
     let whatsappResponse
     try {
-      const phoneNumber = conversation.contact.phone_number
+      // Handle the contact data structure properly
+      const contact = Array.isArray(conversation.contact) ? conversation.contact[0] : conversation.contact
+      if (!contact || !contact.phone_number) {
+        return NextResponse.json(
+          { error: 'Contact phone number not found' },
+          { status: 404 }
+        )
+      }
+      
+      const phoneNumber = contact.phone_number
       
       switch (type) {
         case 'text':
