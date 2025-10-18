@@ -92,6 +92,7 @@ async function processIncomingMessage(message: any, supabase: any, contacts: any
         profileName = contact.profile.name
         profilePictureUrl = contact.profile.picture_url
         console.log('Using profile info from webhook:', contact.profile)
+        console.log('Profile picture URL from webhook:', profilePictureUrl)
       }
     }
     
@@ -230,6 +231,23 @@ async function processIncomingMessage(message: any, supabase: any, contacts: any
       }
     }
 
+    // Fetch profile picture if not provided in webhook
+    if (!profilePictureUrl && userId) {
+      try {
+        const { createWhatsAppAPIForUser } = await import('@/lib/whatsapp-api')
+        const whatsappAPI = await createWhatsAppAPIForUser(userId)
+        if (whatsappAPI) {
+          const profileInfo = await whatsappAPI.getProfileInfo(phoneNumber)
+          if (profileInfo && profileInfo.profile_picture_url) {
+            profilePictureUrl = profileInfo.profile_picture_url
+            console.log('Fetched profile picture URL from API:', profilePictureUrl)
+          }
+        }
+      } catch (error) {
+        console.log('Could not fetch profile picture:', error)
+      }
+    }
+
     // Find or create conversation
     const { data: conversation, error: conversationError } = await supabase
       .from('conversations')
@@ -332,12 +350,19 @@ async function processIncomingMessage(message: any, supabase: any, contacts: any
       console.error('Error updating conversation:', updateError)
     }
 
-    // Update contact's last contacted time
+    // Update contact's last contacted time and profile picture if we have one
+    const contactUpdateData: any = {
+      last_contacted_at: new Date(parseInt(timestamp) * 1000).toISOString()
+    }
+    
+    // Update profile picture if we fetched one and the contact doesn't have one
+    if (profilePictureUrl) {
+      contactUpdateData.profile_picture_url = profilePictureUrl
+    }
+    
     const { error: contactUpdateError } = await supabase
       .from('contacts')
-      .update({
-        last_contacted_at: new Date(parseInt(timestamp) * 1000).toISOString()
-      })
+      .update(contactUpdateData)
       .eq('id', contactId)
 
     if (contactUpdateError) {
