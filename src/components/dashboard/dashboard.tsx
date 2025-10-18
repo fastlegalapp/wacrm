@@ -38,7 +38,7 @@ export function Dashboard() {
     <div className="h-screen flex bg-gray-50">
       <Sidebar 
         activeView={activeView} 
-        onViewChange={setActiveView}
+        onViewChange={(view) => setActiveView(view as ViewType)}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

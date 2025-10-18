@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase-server'
 
 export interface WhatsAppMessage {
   to: string
-  type: 'text' | 'template' | 'image' | 'document' | 'audio' | 'video' | 'sticker'
+  type: 'text' | 'template' | 'image' | 'document' | 'audio' | 'video' | 'sticker' | 'interactive'
   messaging_product: 'whatsapp'
   text?: {
     body: string

@@ -320,8 +320,10 @@ export function LeadsView() {
                                 src={lead.profile_picture_url}
                                 alt={lead.name || 'Profile'}
                                 onError={(e) => {
-                                  e.currentTarget.style.display = 'none'
-                                  e.currentTarget.nextElementSibling!.style.display = 'flex'
+                                  const target = e.currentTarget as HTMLImageElement
+                                  const nextElement = target.nextElementSibling as HTMLElement
+                                  target.style.display = 'none'
+                                  if (nextElement) nextElement.style.display = 'flex'
                                 }}
                               />
                             ) : null}

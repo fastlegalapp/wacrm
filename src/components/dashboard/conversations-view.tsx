@@ -108,7 +108,14 @@ export function ConversationsView() {
         .order('last_message_at', { ascending: false, nullsFirst: false })
 
       if (error) throw error
-      setConversations(data || [])
+      
+      // Transform the data to match our interface
+      const transformedData = (data || []).map(conv => ({
+        ...conv,
+        contact: Array.isArray(conv.contact) ? conv.contact[0] : conv.contact
+      }))
+      
+      setConversations(transformedData)
     } catch (error) {
       console.error('Error fetching conversations:', error)
     } finally {
@@ -194,7 +201,7 @@ export function ConversationsView() {
       await fetchConversations() // Refresh conversations to update last message
     } catch (error) {
       console.error('Error sending message:', error)
-      alert(`Failed to send message: ${error.message}`)
+      alert(`Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSending(false)
     }
@@ -403,8 +410,10 @@ export function ConversationsView() {
                                   src={conversation.contact.profile_picture_url}
                                   alt={conversation.contact.name || 'Profile'}
                                   onError={(e) => {
-                                    e.currentTarget.style.display = 'none'
-                                    e.currentTarget.nextElementSibling!.style.display = 'flex'
+                                    const target = e.currentTarget as HTMLImageElement
+                                    const nextElement = target.nextElementSibling as HTMLElement
+                                    target.style.display = 'none'
+                                    if (nextElement) nextElement.style.display = 'flex'
                                   }}
                                 />
                               ) : null}
@@ -506,8 +515,10 @@ export function ConversationsView() {
                           src={selectedConversation.contact.profile_picture_url}
                           alt={selectedConversation.contact.name || 'Profile'}
                           onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                            e.currentTarget.nextElementSibling!.style.display = 'flex'
+                            const target = e.currentTarget as HTMLImageElement
+                            const nextElement = target.nextElementSibling as HTMLElement
+                            target.style.display = 'none'
+                            if (nextElement) nextElement.style.display = 'flex'
                           }}
                         />
                       ) : null}
